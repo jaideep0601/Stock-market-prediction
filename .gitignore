@@ -137,3 +137,19 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Python cache and virtual environments
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# Project-generated artifacts
+outputs/
+outputs_final/
+outputs_ml/
+outputs_multi_test/
+outputs_week2/
+tests_runtime/
+pytest-cache-files-*/
