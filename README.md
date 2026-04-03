@@ -20,6 +20,7 @@ This project was built to demonstrate internship-ready skills across:
   `MovingAverageCrossoverStrategy`, `RSIStrategy`, `BuyAndHoldStrategy`
 - ML-driven strategy workflow using:
   lagged returns, moving-average ratio, RSI, volatility
+- Walk-forward validation for out-of-sample ML evaluation
 - Logistic Regression and Random Forest signal generation
 - Long/flat portfolio simulation with transaction costs
 - Multi-asset CLI execution
@@ -40,6 +41,10 @@ scripts/
   run_backtest.py     -> CLI entrypoint
 data/
   sample_prices.csv   -> starter dataset for testing
+backend/
+  app/main.py         -> FastAPI API for datasets and backtests
+frontend/
+  app/page.tsx        -> Next.js dashboard
 ```
 
 ## Expected CSV Format
@@ -78,6 +83,12 @@ Run an ML-based strategy:
 python scripts/run_backtest.py --csv data/sample_prices.csv --strategy ml --ml-model logistic --compare-buy-hold --no-plot
 ```
 
+Run ML with walk-forward validation on real data:
+
+```bash
+python scripts/run_backtest.py --csv data/aapl_1d.csv --strategy ml --ml-model logistic --validation-mode walk_forward --min-train-size 252 --step-size 21 --compare-buy-hold --no-plot
+```
+
 Run tests:
 
 ```bash
@@ -89,6 +100,26 @@ Download real stock data:
 ```bash
 python scripts/fetch_data.py --ticker AAPL --start 2020-01-01
 ```
+
+Run the backend:
+
+```bash
+uvicorn backend.app.main:app --reload
+```
+
+Run the frontend:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Upload your own CSV from the frontend dashboard:
+
+- choose `Upload CSV`
+- add a file with `Date`, `Open`, `High`, `Low`, `Close`, `Volume`
+- it will be saved into the local `data/` folder and appear in the dataset selector
 
 ## Output Artifacts
 
@@ -102,6 +133,13 @@ Each run saves files under `outputs/` by default:
 - `comparison_metrics.csv`
 - `comparison_plot.png`
 - `analysis_report.md`
+
+## Full-Stack Layer
+
+- `FastAPI` backend exposes local datasets and run-backtest endpoints.
+- `FastAPI` backend also supports CSV uploads from the frontend.
+- `Next.js` frontend lets you choose a dataset and strategy from a browser dashboard.
+- The web app reuses the same Python backtesting engine rather than duplicating business logic.
 
 ## Real-Data Findings
 
@@ -120,6 +158,7 @@ Using daily data from January 1, 2020 onward for `AAPL`, `MSFT`, `GOOGL`, and `T
 - Only one position is allowed at a time: `long` or `flat`.
 - Transaction costs are applied to entries and exits.
 - ML validation uses a time-based split with no shuffling.
+- The default ML workflow uses expanding-window walk-forward validation.
 
 ## Resume Bullet
 

@@ -67,13 +67,31 @@ def build_parser() -> argparse.ArgumentParser:
         "--train-split",
         type=float,
         default=0.7,
-        help="Fraction of engineered samples used for training in the ML workflow.",
+        help="Fraction of engineered samples used for training in single-split ML mode.",
     )
     parser.add_argument(
         "--threshold",
         type=float,
         default=0.5,
         help="Probability threshold used to convert ML predictions into long/flat signals.",
+    )
+    parser.add_argument(
+        "--validation-mode",
+        choices=["single_split", "walk_forward"],
+        default="walk_forward",
+        help="Validation approach for ML signal generation.",
+    )
+    parser.add_argument(
+        "--min-train-size",
+        type=int,
+        default=252,
+        help="Minimum training rows used before walk-forward predictions begin.",
+    )
+    parser.add_argument(
+        "--step-size",
+        type=int,
+        default=21,
+        help="Number of rows predicted per walk-forward retraining step.",
     )
     parser.add_argument("--output-dir", default="outputs", help="Directory for saved results.")
     parser.add_argument("--no-plot", action="store_true", help="Skip plotting the result.")
@@ -165,6 +183,9 @@ def main() -> None:
                 model_type=args.ml_model,
                 train_split=args.train_split,
                 probability_threshold=args.threshold,
+                validation_mode=args.validation_mode,
+                min_train_size=args.min_train_size,
+                step_size=args.step_size,
             )
             ml_strategy = PrecomputedSignalStrategy(
                 ml_result.signals,
@@ -173,15 +194,21 @@ def main() -> None:
             run_strategies.insert(0, ml_strategy)
             print(f"Asset: {asset_name}")
             print(f"ML model: {ml_result.model_name}")
+            print(f"ML validation mode: {ml_result.validation_mode}")
             print(f"ML accuracy: {ml_result.accuracy:.6f}")
             print(f"ML test start index: {ml_result.test_start_index}")
+            print(f"ML predictions: {ml_result.num_predictions}")
             print()
 
         for strategy in run_strategies:
             result = backtester.run(data, strategy, asset_name=asset_name)
             if args.strategy == "ml" and strategy.name == ml_result.model_name:
                 result.metrics["ml_accuracy"] = ml_result.accuracy
+                result.metrics["ml_validation_mode"] = ml_result.validation_mode
                 result.metrics["ml_train_split"] = args.train_split
+                result.metrics["ml_min_train_size"] = args.min_train_size
+                result.metrics["ml_step_size"] = args.step_size
+                result.metrics["ml_num_predictions"] = ml_result.num_predictions
                 result.metrics["ml_probability_threshold"] = args.threshold
             print_result(asset_name, strategy.name, result)
             summary_rows.append(save_backtest_result(result, args.output_dir))
