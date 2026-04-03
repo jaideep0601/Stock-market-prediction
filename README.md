@@ -84,6 +84,12 @@ Run tests:
 pytest
 ```
 
+Download real stock data:
+
+```bash
+python scripts/fetch_data.py --ticker AAPL --start 2020-01-01
+```
+
 ## Output Artifacts
 
 Each run saves files under `outputs/` by default:
@@ -96,6 +102,16 @@ Each run saves files under `outputs/` by default:
 - `comparison_metrics.csv`
 - `comparison_plot.png`
 - `analysis_report.md`
+
+## Real-Data Findings
+
+Using daily data from January 1, 2020 onward for `AAPL`, `MSFT`, `GOOGL`, and `TSLA`:
+
+- Buy-and-hold outperformed both ML variants on total return across all four stocks.
+- The logistic-regression strategy usually had lower market exposure and sometimes reduced drawdown, but it missed too much upside in strong multi-year trends.
+- The random-forest strategy traded much more frequently and still underperformed buy-and-hold on both return and Sharpe ratio for this stock basket.
+- This is a useful interview takeaway:
+  the project is not about claiming ML beats the market, but about building a fair evaluation pipeline that shows when simpler baselines win.
 
 ## Backtesting Rules
 

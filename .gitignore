@@ -151,5 +151,6 @@ outputs_final/
 outputs_ml/
 outputs_multi_test/
 outputs_week2/
+outputs_*/
 tests_runtime/
 pytest-cache-files-*/
